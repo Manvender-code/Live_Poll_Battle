@@ -14,7 +14,8 @@ io.on("connection", (socket) => {
   socket.on("createRoom", ({ roomCode, username, question, option1, option2 }) => {
     if (!rooms[roomCode]) {
       rooms[roomCode] = {
-        users: new Set(),
+        expirationTime: Date.now() + 60000, // 60 seconds from now
+        users: new Set([username]),
         votes: { option1: 0, option2: 0 },
         votedUsers: new Set(),
         question,
@@ -22,13 +23,13 @@ io.on("connection", (socket) => {
         option2,
       };
     }
-    rooms[roomCode].users.add(username);
     socket.join(roomCode);
     io.to(roomCode).emit("roomData", {
       question,
       option1,
       option2,
       votes: rooms[roomCode].votes,
+      expirationTime: rooms[roomCode].expirationTime,
     });
   });
 
@@ -42,27 +43,19 @@ io.on("connection", (socket) => {
         option1: room.option1,
         option2: room.option2,
         votes: room.votes,
+        expirationTime: room.expirationTime,
       });
-    }
-  });
-
-  socket.on("startTimer", ({ roomCode }) => {
-    const room = rooms[roomCode];
-    if (room && !room.timerStarted) {
-      room.timerStarted = true;
-      io.to(roomCode).emit("startTimer");
-      setTimeout(() => {
-        // Voting timeout handled on client
-      }, 60000);
     }
   });
 
   socket.on("castVote", ({ roomCode, option, username }) => {
     const room = rooms[roomCode];
-    if (room && !room.votedUsers.has(username)) {
+    if (room && Date.now() < room.expirationTime && !room.votedUsers.has(username)) {
       room.votes[option]++;
       room.votedUsers.add(username);
       io.to(roomCode).emit("voteUpdate", room.votes);
+    } else {
+      socket.emit("votingClosed");
     }
   });
 });
