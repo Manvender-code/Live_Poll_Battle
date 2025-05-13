@@ -1,9 +1,29 @@
-# Ignore node_modules for both client and server
+# Node modules
 client/node_modules/
 server/node_modules/
 
+# Build artifacts
+client/build/
+client/dist/
+server/build/
+server/dist/
 
+# Environment files
+client/.env
+server/.env
 
-# System files
+# Logs
+**/*.log
+
+# OS and IDE junk
 .DS_Store
-.env
+Thumbs.db
+.vscode/
+
+# Testing & coverage
+**/coverage/
+**/.nyc_output/
+
+# Lock files (optional, if you want to ignore one of them)
+# package-lock.json
+# yarn.lock
