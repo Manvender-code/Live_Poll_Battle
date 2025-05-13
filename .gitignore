@@ -2,12 +2,7 @@
 client/node_modules/
 server/node_modules/
 
-# Logs
-*.log
 
-# Builds
-client/build/
-client/dist/
 
 # System files
 .DS_Store
